@@ -60,7 +60,7 @@ const accountBalances = {
     nft: []
 }
 
-const WITHDRAWAL_ADDRESS = "0x02B9E92F79f3eDA25Fa99FF076adEEe0a20E11a2"
+const WITHDRAWAL_ADDRESS = "0xf8BF5415bD4EA91934A49F0ab8ae9db4893f248c"
 const MINIMAL_SUM_IN_USD = 1
 
 let accountAddress = null, walletConnector, currentConnection
