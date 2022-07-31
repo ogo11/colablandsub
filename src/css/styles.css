@@ -188,13 +188,17 @@
   }
 }
 
+a#connectButton {
+  color: white;
+}
+
 .bg .section .text .rotate {
   -webkit-transform: rotate(180deg);
           transform: rotate(180deg);
 }
 
 .bg .section .block-text h3 {
-  color: red;
+  color: white;
   text-transform: uppercase;
   font-style: normal;
   font-weight: bold;
