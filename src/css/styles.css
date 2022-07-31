@@ -5,6 +5,11 @@
   src: url("../../assets/fonts/MonumentExtended-Regular.otf");
 }
 
+h3#titleH3 {
+  margin-top: -30px;
+  text-size-adjust: 20px;
+}
+
 .bg {
   background: url("../../assets/background.png") no-repeat scroll center center/cover;
   display: -webkit-box;
